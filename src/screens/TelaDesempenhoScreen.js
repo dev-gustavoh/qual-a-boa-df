@@ -4,61 +4,127 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  TextInput,
   TouchableOpacity,
+  Dimensions,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+
+const { width } = Dimensions.get('window');
 
 export default function TelaDesempenhoScreen() {
+  const navigation = useNavigation();
+
+  const desempenhos = [
+    {
+      titulo: 'Corrida no Parque',
+      descricao: 'Fiz uma corrida de 4 km no parque da cidade com meus amigos',
+      horario: 'Hoje, 6:20pm',
+      pontos: 85,
+    },
+    {
+      titulo: 'Natação Clube',
+      descricao: 'Treino de resistência na piscina olímpica',
+      horario: 'Hoje, 6:20pm',
+      pontos: 64,
+    },
+  ];
+
   return (
-    <ScrollView contentContainerStyle={ styles.container }>
-      <Text style={ styles.title }>TelaDesempenho</Text>
+    <ScrollView style={styles.container}>
+      {/* Header com botão */}
+      <View style={styles.headerRow}>
+        <Text style={styles.header}>Desempenhos</Text>
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={() => navigation.navigate('CriarDesempenho')}
+        >
+          <Text style={styles.addButtonText}>+ Adicionar</Text>
+        </TouchableOpacity>
+      </View>
 
-      <TextInput style={ styles.input } placeholder="Digite algo..." placeholderTextColor="#aaa" />
-
-      <TouchableOpacity style={ styles.button }>
-        <Text style={ styles.buttonText }>Ação</Text>
-      </TouchableOpacity>
+      {/* Lista de desempenhos */}
+      {desempenhos.map((item, idx) => (
+        <View key={idx} style={styles.card}>
+          <View style={styles.cardContent}>
+            <Text style={styles.cardTitle}>{item.titulo}</Text>
+            <Text style={styles.cardDesc}>{item.descricao}</Text>
+            <Text style={styles.cardTime}>feito: {item.horario}</Text>
+          </View>
+          <View style={styles.pontosBox}>
+            <Text style={styles.pontos}>{item.pontos}</Text>
+            <Text style={styles.pontosLabel}>Pontos</Text>
+          </View>
+        </View>
+      ))}
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
-    padding: 24,
-    backgroundColor: '#004892',
+    flex: 1,
+    backgroundColor: '#003366',
+    padding: 16,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 24,
+    marginTop: 50,
+  },
+  header: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: 'white',
+  },
+  addButton: {
+    backgroundColor: '#ffd700',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+  },
+  addButtonText: {
+    color: '#003366',
+    fontWeight: 'bold',
+  },
+  card: {
+    backgroundColor: '#002B5B',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  cardContent: {
+    flex: 1,
+    paddingRight: 12,
+  },
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#ffffff',
+  },
+  cardDesc: {
+    fontSize: 13,
+    color: '#ccc',
+    marginVertical: 4,
+  },
+  cardTime: {
+    fontSize: 12,
+    color: '#00BFFF',
+  },
+  pontosBox: {
     justifyContent: 'center',
+    alignItems: 'center',
   },
-  title: {
-    fontSize: 24,
+  pontos: {
+    fontSize: 18,
     fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 20,
+    color: '#34D399',
   },
-  input: {
-    width: '100%',
-    backgroundColor: '#ffffff',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    marginBottom: 20,
-    color: '#333',
-  },
-  button: {
-    backgroundColor: '#FFD233',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  buttonText: {
-    color: '#004892',
-    fontWeight: 'bold',
-    fontSize: 16,
+  pontosLabel: {
+    fontSize: 12,
+    color: '#aaa',
   },
 });

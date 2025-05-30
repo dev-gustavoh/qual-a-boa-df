@@ -3,20 +3,64 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
-  TextInput,
   TouchableOpacity,
+  ScrollView,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { FontAwesome, MaterialIcons, Feather } from '@expo/vector-icons';
 
 export default function PerfilScreen() {
+  const navigation = useNavigation();
+
   return (
-    <ScrollView contentContainerStyle={ styles.container }>
-      <Text style={ styles.title }>Perfil</Text>
+    <ScrollView style={styles.container}>
+      <View style={styles.header}>
+        <View style={styles.avatarPlaceholder}>
+          <FontAwesome name="user-circle" size={64} color="#fff" />
+        </View>
+        <View style={styles.userInfo}>
+          <Text style={styles.userName}>Joy Augustin</Text>
+          <Text style={styles.userEmail}>joy@augustin.com</Text>
+        </View>
+      </View>
 
-      <TextInput style={ styles.input } placeholder="Digite algo..." placeholderTextColor="#aaa" />
+      <Text style={styles.sectionTitle}>Account</Text>
 
-      <TouchableOpacity style={ styles.button }>
-        <Text style={ styles.buttonText }>Ação</Text>
+      <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('ConfigPage')}>
+        <MaterialIcons name="settings" size={20} color="#333" style={styles.icon} />
+        <Text style={styles.cardText}>Configurações</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('TelaDesempenho')}>
+        <MaterialIcons name="bar-chart" size={20} color="#333" style={styles.icon} />
+        <Text style={styles.cardText}>Desempenho</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('Notificacao')}>
+        <Feather name="bell" size={20} color="#333" style={styles.icon} />
+        <Text style={styles.cardText}>Notificações</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('EditarPerfil')}>
+        <Feather name="edit" size={20} color="#333" style={styles.icon} />
+        <Text style={styles.cardText}>Editar Perfil</Text>
+      </TouchableOpacity>
+
+      <Text style={styles.sectionTitle}>General</Text>
+
+      <TouchableOpacity style={styles.card}>
+        <Feather name="help-circle" size={20} color="#333" style={styles.icon} />
+        <Text style={styles.cardText}>Suporte</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.card}>
+        <Feather name="shield" size={20} color="#333" style={styles.icon} />
+        <Text style={styles.cardText}>Terms of Service</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.card}>
+        <Feather name="user-plus" size={20} color="#333" style={styles.icon} />
+        <Text style={styles.cardText}>Convidar Amigos</Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -24,41 +68,56 @@ export default function PerfilScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
-    padding: 24,
-    backgroundColor: '#004892',
+    flex: 1,
+    backgroundColor: '#003366',
+    padding: 16,
+  },
+  header: {
+    flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 24,
+    marginTop: 70,
+  },
+  avatarPlaceholder: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: '#00509E',
     justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
+  userInfo: {
+    flex: 1,
+  },
+  userName: {
     color: '#fff',
-    marginBottom: 20,
-  },
-  input: {
-    width: '100%',
-    backgroundColor: '#ffffff',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    marginBottom: 20,
-    color: '#333',
-  },
-  button: {
-    backgroundColor: '#FFD233',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  buttonText: {
-    color: '#004892',
+    fontSize: 20,
     fontWeight: 'bold',
+  },
+  userEmail: {
+    color: '#ccc',
+    fontSize: 14,
+  },
+  sectionTitle: {
+    color: '#ccc',
+    fontSize: 14,
+    marginBottom: 10,
+    marginTop: 12,
+  },
+  card: {
+    flexDirection: 'row',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  icon: {
+    marginRight: 12,
+  },
+  cardText: {
     fontSize: 16,
+    color: '#333',
   },
 });

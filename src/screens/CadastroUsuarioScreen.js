@@ -6,18 +6,28 @@ import {
   StyleSheet,
   TouchableOpacity,
   SafeAreaView,
+  Modal,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 
 export default function CadastroUsuarioScreen({ navigation }) {
   const [error, setError] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  const handleCadastro = () => {
+    // Simula cadastro com sucesso
+    setError(false);
+    setSuccess(true);
+    setTimeout(() => {
+      setSuccess(false);
+      navigation.navigate('Login');
+    }, 2000);
+  };
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
       <Text style={styles.header}>Criar Conta</Text>
 
-      {/* Avatar + Botão adicionar imagem */}
       <View style={styles.avatarContainer}>
         <View style={styles.avatarPlaceholder}>
           <MaterialIcons name="person" size={50} color="#ccc" />
@@ -27,7 +37,6 @@ export default function CadastroUsuarioScreen({ navigation }) {
         </TouchableOpacity>
       </View>
 
-      {/* Formulário */}
       <View style={styles.form}>
         <View style={styles.inputGroup}>
           <MaterialIcons name="person" size={20} color="#555" style={styles.icon} />
@@ -61,15 +70,10 @@ export default function CadastroUsuarioScreen({ navigation }) {
           <TextInput placeholder="CPF" keyboardType="numeric" style={styles.input} />
         </View>
 
-        {/* Botão cadastrar */}
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => setError(true)} // Troque por chamada real
-        >
+        <TouchableOpacity style={styles.button} onPress={handleCadastro}>
           <Text style={styles.buttonText}>Cadastrar</Text>
         </TouchableOpacity>
 
-        {/* Link login */}
         <Text style={styles.loginText}>
           Já possui uma conta?{' '}
           <Text style={styles.loginLink} onPress={() => navigation.navigate('Login')}>
@@ -77,17 +81,29 @@ export default function CadastroUsuarioScreen({ navigation }) {
           </Text>
         </Text>
 
-        {/* Mensagem de erro */}
         {error && (
           <View style={styles.errorBox}>
             <Text style={styles.errorText}>❗ Erro ao realizar cadastro</Text>
-            <Text style={styles.errorSub}>Verifique os dados informados e tente novamente</Text>
+            <Text style={styles.errorSub}>
+              Verifique os dados informados e tente novamente
+            </Text>
           </View>
         )}
       </View>
+
+      {/* Popup de sucesso */}
+      <Modal visible={success} transparent animationType="fade">
+        <View style={styles.popupContainer}>
+          <View style={styles.popupBox}>
+            <Text style={styles.popupIcon}>✅</Text>
+            <Text style={styles.popupText}>Cadastro realizado com sucesso!</Text>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -175,5 +191,25 @@ const styles = StyleSheet.create({
   errorSub: {
     color: '#A80000',
     fontSize: 12,
+  },
+  popupContainer: {
+    flex: 1,
+    backgroundColor: '#00000088',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  popupBox: {
+    backgroundColor: '#fff',
+    padding: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  popupIcon: {
+    fontSize: 40,
+  },
+  popupText: {
+    fontSize: 18,
+    marginTop: 12,
+    fontWeight: '600',
   },
 });

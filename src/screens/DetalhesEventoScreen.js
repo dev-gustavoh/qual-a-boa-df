@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -8,10 +7,20 @@ import {
   TouchableOpacity,
   ScrollView,
   SafeAreaView,
+  Modal,
 } from 'react-native';
 
 export default function TelaDetalhesEvento({ route, navigation }) {
   const { evento } = route.params;
+  const [popupVisible, setPopupVisible] = useState(false);
+
+  const handleMarcarEvento = () => {
+    setPopupVisible(true);
+    setTimeout(() => {
+      setPopupVisible(false);
+      navigation.navigate('EventoMarcado');
+    }, 2000);
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -31,23 +40,22 @@ export default function TelaDetalhesEvento({ route, navigation }) {
           <Text style={styles.localTitle}>Local do Evento</Text>
           <Text style={styles.localAddress}>{evento.endereco}</Text>
           <Text style={styles.localCity}>{evento.cidade}</Text>
+        </View>
 
-          <View style={styles.spotsBox}>
-            <Text style={styles.detailsButton}>Detalhes</Text>
-            <Text style={styles.spotsText}>249 spots remaining</Text>
+        <View style={styles.centerButtonWrapper}>
+          <TouchableOpacity style={styles.markButton} onPress={handleMarcarEvento}>
+            <Text style={styles.markButtonText}>Marcar</Text>
+          </TouchableOpacity>
+        </View>
+
+        <Modal visible={popupVisible} transparent animationType="fade">
+          <View style={styles.popupContainer}>
+            <View style={styles.popupBox}>
+              <Text style={styles.popupIcon}>✅</Text>
+              <Text style={styles.popupText}>Evento Marcado!</Text>
+            </View>
           </View>
-        </View>
-
-        <Text style={styles.participantesTitle}>Amigos Participando</Text>
-        <View style={styles.avatarRow}>
-          {evento.amigos.map((img, idx) => (
-            <Image key={idx} source={img} style={styles.avatar} />
-          ))}
-        </View>
-
-        <TouchableOpacity style={styles.markButton}>
-          <Text style={styles.markButtonText}>Marcar Evento</Text>
-        </TouchableOpacity>
+        </Modal>
       </ScrollView>
     </SafeAreaView>
   );
@@ -109,49 +117,39 @@ const styles = StyleSheet.create({
     color: '#666',
     marginBottom: 12,
   },
-  spotsBox: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  centerButtonWrapper: {
     alignItems: 'center',
-  },
-  detailsButton: {
-    backgroundColor: '#10b981',
-    color: 'white',
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    borderRadius: 6,
-    fontSize: 14,
-    overflow: 'hidden',
-  },
-  spotsText: {
-    fontSize: 12,
-    color: '#555',
-  },
-  participantesTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: 'white',
-    marginBottom: 12,
-  },
-  avatarRow: {
-    flexDirection: 'row',
-    marginBottom: 24,
-  },
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    marginRight: 12,
+    marginBottom: 32,
   },
   markButton: {
-    backgroundColor: '#001F54',
-    paddingVertical: 16,
+    backgroundColor: '#ffd700',
+    paddingVertical: 10,
+    paddingHorizontal: 30,
+    borderRadius: 20,
+  },
+  markButtonText: {
+    color: '#001F54',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  popupContainer: {
+    flex: 1,
+    backgroundColor: '#00000088',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  popupBox: {
+    backgroundColor: '#fff',
+    padding: 24,
     borderRadius: 12,
     alignItems: 'center',
   },
-  markButtonText: {
-    color: '#FFD700',
-    fontWeight: 'bold',
-    fontSize: 16,
+  popupIcon: {
+    fontSize: 40,
+  },
+  popupText: {
+    fontSize: 18,
+    marginTop: 12,
+    fontWeight: '600',
   },
 });
