@@ -8,75 +8,96 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import { login } from '../services/auth'; // ajuste se necessário
 
 export default function LoginScreen({ navigation }) {
+  const [email, setEmail] = useState('');
+  const [senha, setSenha] = useState('');
+  const [erro, setErro] = useState('');
   const [passwordVisible, setPasswordVisible] = useState(false);
 
+  const handleLogin = async () => {
+    setErro('');
+    try {
+      const resultado = await login(email, senha);
+      console.log('Usuário logado:', resultado);
+      navigation.navigate('Main');
+    } catch (error) {
+      setErro(error.message || 'Erro ao tentar logar');
+    }
+  };
+
   return (
-    <SafeAreaView style={styles.container}>
-      {/* TOPO COM ICONE PADRÃO */}
-      <View style={styles.header}>
-        <View style={styles.iconPlaceholder}>
-          <MaterialIcons name="directions-run" size={48} color="#004892" />
+      <SafeAreaView style={styles.container}>
+        {/* TOPO COM ICONE PADRÃO */}
+        <View style={styles.header}>
+          <View style={styles.iconPlaceholder}>
+            <MaterialIcons name="directions-run" size={48} color="#004892" />
+          </View>
+          <Text style={styles.title}>Login</Text>
+          <Text style={styles.subtitle}>use sua conta para logar</Text>
         </View>
-        <Text style={styles.title}>Login</Text>
-        <Text style={styles.subtitle}>use sua conta para logar</Text>
-      </View>
 
-      {/* FORMULÁRIO */}
-      <View style={styles.form}>
-        <TextInput
-          placeholder="Email"
-          style={styles.input}
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
-        <View style={styles.passwordContainer}>
+        {/* FORMULÁRIO */}
+        <View style={styles.form}>
           <TextInput
-            placeholder="Password"
-            secureTextEntry={!passwordVisible}
-            style={[styles.input, { flex: 1, marginBottom: 0 }]}
+              placeholder="Email"
+              style={styles.input}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              value={email}
+              onChangeText={setEmail}
           />
-          <TouchableOpacity
-            onPress={() => setPasswordVisible(!passwordVisible)}
-            style={styles.toggleVisibility}
-          >
-            <MaterialIcons
-              name={passwordVisible ? 'visibility-off' : 'visibility'}
-              size={20}
-              color="#888"
+          <View style={styles.passwordContainer}>
+            <TextInput
+                placeholder="Password"
+                secureTextEntry={!passwordVisible}
+                style={[styles.input, { flex: 1, marginBottom: 0 }]}
+                value={senha}
+                onChangeText={setSenha}
             />
+            <TouchableOpacity
+                onPress={() => setPasswordVisible(!passwordVisible)}
+                style={styles.toggleVisibility}
+            >
+              <MaterialIcons
+                  name={passwordVisible ? 'visibility-off' : 'visibility'}
+                  size={20}
+                  color="#888"
+              />
+            </TouchableOpacity>
+          </View>
+
+          <TouchableOpacity style={styles.button} onPress={handleLogin}>
+            <Text style={styles.buttonText}>Logar</Text>
           </TouchableOpacity>
-        </View>
 
-        <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText}>Logar</Text>
-        </TouchableOpacity>
+          {erro !== '' && <Text style={{ color: 'red', textAlign: 'center' }}>{erro}</Text>}
 
-        {/* BOTÃO DE TESTE PARA PULAR LOGIN */}
-        <TouchableOpacity
-          style={[styles.button, { backgroundColor: '#ccc', marginTop: 10 }]}
-          onPress={() => navigation.navigate('Main')}
-        >
-          <Text style={[styles.buttonText, { color: '#000' }]}>Pular Login</Text>
-        </TouchableOpacity>
-        {/* FIM DO BOTÃO DE TESTE */}
-
-        <TouchableOpacity>
-          <Text style={styles.forgot}>Esqueci a senha</Text>
-        </TouchableOpacity>
-
-        <Text style={styles.registerText}>
-          Novo usuário?{' '}
-          <Text
-            style={styles.registerLink}
-            onPress={() => navigation.navigate('CadastroUsuario')}
+          {/* BOTÃO DE TESTE PARA PULAR LOGIN */}
+          <TouchableOpacity
+              style={[styles.button, { backgroundColor: '#ccc', marginTop: 10 }]}
+              onPress={() => navigation.navigate('Main')}
           >
-            Cadastrar-se
+            <Text style={[styles.buttonText, { color: '#000' }]}>Pular Login</Text>
+          </TouchableOpacity>
+          {/* FIM DO BOTÃO DE TESTE */}
+
+          <TouchableOpacity>
+            <Text style={styles.forgot}>Esqueci a senha</Text>
+          </TouchableOpacity>
+
+          <Text style={styles.registerText}>
+            Novo usuário?{' '}
+            <Text
+                style={styles.registerLink}
+                onPress={() => navigation.navigate('CadastroUsuario')}
+            >
+              Cadastrar-se
+            </Text>
           </Text>
-        </Text>
-      </View>
-    </SafeAreaView>
+        </View>
+      </SafeAreaView>
   );
 }
 

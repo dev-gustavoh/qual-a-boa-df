@@ -8,6 +8,7 @@ import {
   ScrollView,
   SafeAreaView,
   Modal,
+  Linking,
 } from 'react-native';
 
 export default function TelaDetalhesEvento({ route, navigation }) {
@@ -23,41 +24,57 @@ export default function TelaDetalhesEvento({ route, navigation }) {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
-        <Text style={styles.header}>Detalhes do Evento</Text>
+      <SafeAreaView style={styles.container}>
+        <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
+          <Text style={styles.header}>Detalhes do Evento</Text>
 
-        <Text style={styles.eventTitle}>{evento.titulo}</Text>
+          <Text style={styles.eventTitle}>{evento.nome}</Text>
 
-        <Image source={evento.imagem} style={styles.image} />
+          {/* Imagem baseada na URL do evento, ou uma imagem padrão */}
+          <Image
+              source={
+                evento.urlEvento
+                    ? { uri: evento.urlEvento }
+                    : require('../../assets/images/default.jpg') // caminho relativo corrigido
+              }
+              style={styles.image}
+          />
 
-        <Text style={styles.eventSubtitle}>{evento.subtitulo}</Text>
-        <Text style={styles.dateTime}>
-          📅 {evento.data}  |  🕒 {evento.horario}
-        </Text>
+          <Text style={styles.eventSubtitle}>{evento.descricao}</Text>
+          <Text style={styles.dateTime}>📅 {new Date(evento.dataEvento).toLocaleString()}</Text>
 
-        <View style={styles.localBox}>
-          <Text style={styles.localTitle}>Local do Evento</Text>
-          <Text style={styles.localAddress}>{evento.endereco}</Text>
-          <Text style={styles.localCity}>{evento.cidade}</Text>
-        </View>
-
-        <View style={styles.centerButtonWrapper}>
-          <TouchableOpacity style={styles.markButton} onPress={handleMarcarEvento}>
-            <Text style={styles.markButtonText}>Marcar</Text>
-          </TouchableOpacity>
-        </View>
-
-        <Modal visible={popupVisible} transparent animationType="fade">
-          <View style={styles.popupContainer}>
-            <View style={styles.popupBox}>
-              <Text style={styles.popupIcon}>✅</Text>
-              <Text style={styles.popupText}>Evento Marcado!</Text>
-            </View>
+          <View style={styles.localBox}>
+            <Text style={styles.localTitle}>Local</Text>
+            <Text style={styles.localAddress}>{evento.local}</Text>
           </View>
-        </Modal>
-      </ScrollView>
-    </SafeAreaView>
+
+          <View style={styles.organizadorBox}>
+            <Text style={styles.localTitle}>Organizador</Text>
+            <Text style={styles.localAddress}>{evento.organizador}</Text>
+          </View>
+
+          {evento.urlEvento?.startsWith('http') && (
+              <TouchableOpacity onPress={() => Linking.openURL(evento.urlEvento)}>
+                <Text style={styles.link}>🔗 Acessar site do evento</Text>
+              </TouchableOpacity>
+          )}
+
+          <View style={styles.centerButtonWrapper}>
+            <TouchableOpacity style={styles.markButton} onPress={handleMarcarEvento}>
+              <Text style={styles.markButtonText}>Marcar</Text>
+            </TouchableOpacity>
+          </View>
+
+          <Modal visible={popupVisible} transparent animationType="fade">
+            <View style={styles.popupContainer}>
+              <View style={styles.popupBox}>
+                <Text style={styles.popupIcon}>✅</Text>
+                <Text style={styles.popupText}>Evento Marcado!</Text>
+              </View>
+            </View>
+          </Modal>
+        </ScrollView>
+      </SafeAreaView>
   );
 }
 
@@ -85,6 +102,7 @@ const styles = StyleSheet.create({
     height: 180,
     borderRadius: 10,
     marginBottom: 16,
+    backgroundColor: '#ccc',
   },
   eventSubtitle: {
     fontSize: 18,
@@ -101,6 +119,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 12,
     padding: 16,
+    marginBottom: 12,
+  },
+  organizadorBox: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 16,
     marginBottom: 24,
   },
   localTitle: {
@@ -111,11 +135,6 @@ const styles = StyleSheet.create({
   localAddress: {
     fontSize: 14,
     fontWeight: '600',
-  },
-  localCity: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 12,
   },
   centerButtonWrapper: {
     alignItems: 'center',
@@ -151,5 +170,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginTop: 12,
     fontWeight: '600',
+  },
+  link: {
+    color: '#60a5fa',
+    marginTop: 12,
+    textAlign: 'center',
+    textDecorationLine: 'underline',
   },
 });

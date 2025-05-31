@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,118 +6,71 @@ import {
   TouchableOpacity,
   ScrollView,
   SafeAreaView,
-  Dimensions,
   Image,
+  ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-
-const { width } = Dimensions.get('window');
+import { getEventos } from '../services/api';
 
 export default function InicioScreen() {
   const navigation = useNavigation();
+  const [eventos, setEventos] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const handleEventoPress = (evento) => {
     navigation.navigate('DetalhesEvento', { evento });
   };
 
-  const eventosSugeridos = [
-    {
-      titulo: 'Judô',
-      subtitulo: 'Aulas para iniciantes e avançados',
-      data: 'Terça e Quinta',
-      horario: '18h - 20h',
-      endereco: 'Centro Esportivo Y, Asa Norte',
-      cidade: 'Brasília - DF',
-      imagem: require('../../assets/images/judo.jpg'),
-      amigos: [],
-    },
-    {
-      titulo: 'Crossfit',
-      subtitulo: 'Aulas ao ar livre',
-      data: 'Segunda a Sexta',
-      horario: '07h - 08h',
-      endereco: 'Parque da Cidade',
-      cidade: 'Brasília - DF',
-      imagem: require('../../assets/images/crossfit.jpg'),
-      amigos: [],
-    },
-    {
-      titulo: 'Yoga',
-      subtitulo: 'Prática em grupo',
-      data: 'Domingo',
-      horario: '17h - 18h',
-      endereco: 'Eixão Norte',
-      cidade: 'Brasília - DF',
-      imagem: require('../../assets/images/yoga.jpg'),
-      amigos: [],
-    },
-  ];
-
-  const eventosFavoritos = [
-    {
-      titulo: 'Futsal',
-      subtitulo: 'Jogo de futsal entre amigos',
-      data: 'Quarta',
-      horario: '09:30',
-      endereco: 'Quadra Poliesportiva da 308 Sul',
-      cidade: 'Brasília - DF',
-      imagem: require('../../assets/images/futsal.jpg'),
-      amigos: [],
-    },
-    {
-      titulo: 'Natação',
-      subtitulo: 'Treino livre de natação',
-      data: 'Sábado',
-      horario: '09:30',
-      endereco: 'Piscina Pública da UNB',
-      cidade: 'Brasília - DF',
-      imagem: require('../../assets/images/natacao.jpg'),
-      amigos: [],
-    },
-  ];
+  useEffect(() => {
+    getEventos()
+        .then((data) => {
+          console.log("✅ Eventos recebidos:", data);
+          setEventos(data);
+        })
+        .catch((err) => {
+          console.error("❌ Erro ao carregar eventos:", err);
+        })
+        .finally(() => setLoading(false));
+  }, []);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
-        <View style={styles.headerRow}>
-          <Text style={styles.sectionTitle}>Sugestões</Text>
-          <TouchableOpacity
-            onPress={() => navigation.navigate('CriarEvento')}
-            style={styles.criarEventoBtn}
-          >
-            <Text style={styles.criarEventoText}>+ Criar Evento</Text>
-          </TouchableOpacity>
-        </View>
-
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.carousel}>
-          {eventosSugeridos.map((item, idx) => (
+      <SafeAreaView style={styles.container}>
+        <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
+          <View style={styles.headerRow}>
+            <Text style={styles.sectionTitle}>Sugestões</Text>
             <TouchableOpacity
-              key={idx}
-              style={[styles.card, { width: width * 0.8 }]}
-              onPress={() => handleEventoPress(item)}
+                onPress={() => navigation.navigate('CriarEvento')}
+                style={styles.criarEventoBtn}
             >
-              <Image source={item.imagem} style={styles.cardImage} />
-              <Text style={styles.cardTitle}>{item.titulo}</Text>
-              <Text style={styles.cardSubtitle}>{item.subtitulo}</Text>
-              <Text style={styles.cardDate}>📅 {item.data}</Text>
+              <Text style={styles.criarEventoText}>+ Criar Evento</Text>
             </TouchableOpacity>
-          ))}
-        </ScrollView>
+          </View>
 
-        <Text style={styles.sectionTitle}>Favoritos</Text>
-        {eventosFavoritos.map((fav, idx) => (
-          <TouchableOpacity
-            key={idx}
-            style={[styles.card, styles.favCard, { width: '100%' }]}
-            onPress={() => handleEventoPress(fav)}
-          >
-            <Image source={fav.imagem} style={styles.cardImage} />
-            <Text style={styles.cardTitle}>{fav.titulo}</Text>
-            <Text style={styles.cardDate}>📅 {fav.data} às {fav.horario}</Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-    </SafeAreaView>
+          {loading ? (
+              <ActivityIndicator size="large" color="#fff" style={{ marginTop: 20 }} />
+          ) : (
+              eventos.map((item, idx) => (
+                  <TouchableOpacity
+                      key={idx}
+                      style={styles.card}
+                      onPress={() => handleEventoPress(item)}
+                  >
+                    <Image
+                        source={require('../../assets/images/default.jpg')} // imagem padrão
+                        style={styles.cardImage}
+                    />
+                    <View style={styles.cardContent}>
+                      <Text style={styles.cardTitle}>{item.nome || 'Evento sem nome'}</Text>
+                      <Text style={styles.cardSubtitle}>{item.descricao || 'Sem descrição'}</Text>
+                      <Text style={styles.cardDate}>
+                        📅 {item.data ? new Date(item.data).toLocaleDateString() : 'Data indefinida'}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+              ))
+          )}
+        </ScrollView>
+      </SafeAreaView>
   );
 }
 
@@ -150,38 +103,35 @@ const styles = StyleSheet.create({
     color: 'white',
     marginLeft: 15,
   },
-  carousel: {
-    flexDirection: 'row',
-    marginBottom: 24,
-  },
   card: {
-    borderRadius: 12,
-    padding: 16,
-    marginRight: 12,
+    flexDirection: 'row',
     backgroundColor: '#004080',
-  },
-  favCard: {
+    borderRadius: 12,
+    padding: 12,
     marginBottom: 16,
   },
   cardImage: {
-    width: '100%',
-    height: 120,
-    borderRadius: 10,
-    marginBottom: 8,
+    width: 100,
+    height: 100,
+    borderRadius: 8,
+    marginRight: 12,
+  },
+  cardContent: {
+    flex: 1,
+    justifyContent: 'space-around',
   },
   cardTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     color: 'white',
   },
   cardSubtitle: {
     fontSize: 14,
     color: 'white',
-    marginVertical: 4,
   },
   cardDate: {
     fontSize: 14,
-    color: '#fff',
+    color: '#facc15',
     marginTop: 4,
   },
 });

@@ -9,98 +9,147 @@ import {
   Modal,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import { registrarUsuario } from '../services/registroApi';
 
 export default function CadastroUsuarioScreen({ navigation }) {
+  const [nomeCompleto, setNomeCompleto] = useState('');
+  const [email, setEmail] = useState('');
+  const [senha, setSenha] = useState('');
+  const [confirmarSenha, setConfirmarSenha] = useState('');
+  const [cpf, setCpf] = useState('');
   const [error, setError] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  const handleCadastro = () => {
-    // Simula cadastro com sucesso
-    setError(false);
-    setSuccess(true);
-    setTimeout(() => {
-      setSuccess(false);
-      navigation.navigate('Login');
-    }, 2000);
+  const handleCadastro = async () => {
+    if (senha !== confirmarSenha) {
+      setError(true);
+      return;
+    }
+
+    const [primeiroNome, ...resto] = nomeCompleto.split(' ');
+    const sobrenome = resto.join(' ');
+
+    const novoUsuario = {
+      primeiroNome: primeiroNome || '',
+      sobrenome: sobrenome || '',
+      email,
+      senha,
+      cpf,
+      tipoUsuario: 'USER', // pode ajustar conforme necessário
+    };
+
+    try {
+      await registrarUsuario(novoUsuario);
+      setError(false);
+      setSuccess(true);
+      setTimeout(() => {
+        setSuccess(false);
+        navigation.navigate('Login');
+      }, 2000);
+    } catch (e) {
+      setError(true);
+      console.error(e.message);
+    }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.header}>Criar Conta</Text>
+      <SafeAreaView style={styles.container}>
+        <Text style={styles.header}>Criar Conta</Text>
 
-      <View style={styles.avatarContainer}>
-        <View style={styles.avatarPlaceholder}>
-          <MaterialIcons name="person" size={50} color="#ccc" />
-        </View>
-        <TouchableOpacity style={styles.addImageButton}>
-          <MaterialIcons name="add-a-photo" size={18} color="#fff" />
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.form}>
-        <View style={styles.inputGroup}>
-          <MaterialIcons name="person" size={20} color="#555" style={styles.icon} />
-          <TextInput placeholder="Nome Completo" style={styles.input} />
+        <View style={styles.avatarContainer}>
+          <View style={styles.avatarPlaceholder}>
+            <MaterialIcons name="person" size={50} color="#ccc" />
+          </View>
+          <TouchableOpacity style={styles.addImageButton}>
+            <MaterialIcons name="add-a-photo" size={18} color="#fff" />
+          </TouchableOpacity>
         </View>
 
-        <View style={styles.inputGroup}>
-          <MaterialIcons name="email" size={20} color="#555" style={styles.icon} />
-          <TextInput placeholder="Email" keyboardType="email-address" style={styles.input} />
-        </View>
+        <View style={styles.form}>
+          <View style={styles.inputGroup}>
+            <MaterialIcons name="person" size={20} color="#555" style={styles.icon} />
+            <TextInput
+                placeholder="Nome Completo"
+                style={styles.input}
+                value={nomeCompleto}
+                onChangeText={setNomeCompleto}
+            />
+          </View>
 
-        <View style={styles.inputGroup}>
-          <MaterialIcons name="lock" size={20} color="#555" style={styles.icon} />
-          <TextInput placeholder="Senha" secureTextEntry style={styles.input} />
-          <MaterialIcons name="visibility-off" size={20} color="#aaa" />
-        </View>
+          <View style={styles.inputGroup}>
+            <MaterialIcons name="email" size={20} color="#555" style={styles.icon} />
+            <TextInput
+                placeholder="Email"
+                keyboardType="email-address"
+                style={styles.input}
+                value={email}
+                onChangeText={setEmail}
+            />
+          </View>
 
-        <View style={styles.inputGroup}>
-          <MaterialIcons name="lock" size={20} color="#555" style={styles.icon} />
-          <TextInput placeholder="Confirmar Senha" secureTextEntry style={styles.input} />
-          <MaterialIcons name="visibility-off" size={20} color="#aaa" />
-        </View>
+          <View style={styles.inputGroup}>
+            <MaterialIcons name="lock" size={20} color="#555" style={styles.icon} />
+            <TextInput
+                placeholder="Senha"
+                secureTextEntry
+                style={styles.input}
+                value={senha}
+                onChangeText={setSenha}
+            />
+          </View>
 
-        <View style={styles.inputGroup}>
-          <MaterialIcons name="phone" size={20} color="#555" style={styles.icon} />
-          <TextInput placeholder="Telefone" keyboardType="phone-pad" style={styles.input} />
-        </View>
+          <View style={styles.inputGroup}>
+            <MaterialIcons name="lock" size={20} color="#555" style={styles.icon} />
+            <TextInput
+                placeholder="Confirmar Senha"
+                secureTextEntry
+                style={styles.input}
+                value={confirmarSenha}
+                onChangeText={setConfirmarSenha}
+            />
+          </View>
 
-        <View style={styles.inputGroup}>
-          <MaterialIcons name="badge" size={20} color="#555" style={styles.icon} />
-          <TextInput placeholder="CPF" keyboardType="numeric" style={styles.input} />
-        </View>
+          <View style={styles.inputGroup}>
+            <MaterialIcons name="badge" size={20} color="#555" style={styles.icon} />
+            <TextInput
+                placeholder="CPF"
+                keyboardType="numeric"
+                style={styles.input}
+                value={cpf}
+                onChangeText={setCpf}
+            />
+          </View>
 
-        <TouchableOpacity style={styles.button} onPress={handleCadastro}>
-          <Text style={styles.buttonText}>Cadastrar</Text>
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={handleCadastro}>
+            <Text style={styles.buttonText}>Cadastrar</Text>
+          </TouchableOpacity>
 
-        <Text style={styles.loginText}>
-          Já possui uma conta?{' '}
-          <Text style={styles.loginLink} onPress={() => navigation.navigate('Login')}>
-            Entrar
-          </Text>
-        </Text>
-
-        {error && (
-          <View style={styles.errorBox}>
-            <Text style={styles.errorText}>❗ Erro ao realizar cadastro</Text>
-            <Text style={styles.errorSub}>
-              Verifique os dados informados e tente novamente
+          <Text style={styles.loginText}>
+            Já possui uma conta?{' '}
+            <Text style={styles.loginLink} onPress={() => navigation.navigate('Login')}>
+              Entrar
             </Text>
-          </View>
-        )}
-      </View>
+          </Text>
 
-      {/* Popup de sucesso */}
-      <Modal visible={success} transparent animationType="fade">
-        <View style={styles.popupContainer}>
-          <View style={styles.popupBox}>
-            <Text style={styles.popupIcon}>✅</Text>
-            <Text style={styles.popupText}>Cadastro realizado com sucesso!</Text>
-          </View>
+          {error && (
+              <View style={styles.errorBox}>
+                <Text style={styles.errorText}>❗ Erro ao realizar cadastro</Text>
+                <Text style={styles.errorSub}>
+                  Verifique os dados informados e tente novamente
+                </Text>
+              </View>
+          )}
         </View>
-      </Modal>
-    </SafeAreaView>
+
+        <Modal visible={success} transparent animationType="fade">
+          <View style={styles.popupContainer}>
+            <View style={styles.popupBox}>
+              <Text style={styles.popupIcon}>✅</Text>
+              <Text style={styles.popupText}>Cadastro realizado com sucesso!</Text>
+            </View>
+          </View>
+        </Modal>
+      </SafeAreaView>
   );
 }
 

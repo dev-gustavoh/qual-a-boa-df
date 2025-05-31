@@ -1,113 +1,144 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  TextInput,
   TouchableOpacity,
   ScrollView,
   Image,
+  ActivityIndicator,
+  TextInput,
   Dimensions,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons'; // Ícone de avatar
+import { getEventos } from '../services/api'; // Função para buscar eventos da API
+import { getCategorias } from '../services/categoriaApi'; // Função para buscar categorias da API
 
 const { width } = Dimensions.get('window');
 
-const eventosMock = [
-  {
-    titulo: 'Judô - Ring Y',
-    subtitulo: 'Aulas para iniciantes e avançados',
-    data: 'Terça e Quinta',
-    local: 'Centro Esportivo Y',
-    status: 'Gratuito',
-    imagem: require('../../assets/images/judo.jpg'),
-  },
-  {
-    titulo: 'Crossfit no Parque',
-    subtitulo: 'Aulas ao ar livre',
-    data: 'Segunda a Sexta',
-    local: 'Parque da Cidade',
-    status: 'Pago',
-    imagem: require('../../assets/images/crossfit.jpg'),
-  },
-  {
-    titulo: 'Yoga ao Pôr do Sol',
-    subtitulo: 'Prática em grupo',
-    data: 'Domingo às 18h',
-    local: 'Eixão Norte',
-    status: 'Hoje',
-    imagem: require('../../assets/images/yoga.jpg'),
-  },
-];
-
 export default function BuscaEventoScreen() {
   const navigation = useNavigation();
+  const [eventos, setEventos] = useState([]);
+  const [categorias, setCategorias] = useState([]); // Estado para armazenar categorias
+  const [loading, setLoading] = useState(true);
   const [filtroTexto, setFiltroTexto] = useState('');
-  const [filtroCategoria, setFiltroCategoria] = useState(null);
+  const [filtroCategoria, setFiltroCategoria] = useState(null); // Estado para categoria selecionada
 
-  const aplicarFiltros = (evento) => {
-    const texto = filtroTexto.toLowerCase();
-    const passaTexto = evento.titulo.toLowerCase().includes(texto);
-    const passaCategoria = filtroCategoria ? evento.status === filtroCategoria : true;
-    return passaTexto && passaCategoria;
+  // Função para carregar os eventos
+  const carregarEventos = async () => {
+    try {
+      const data = await getEventos();
+      setEventos(data);
+    } catch (error) {
+      console.error("❌ Erro ao carregar eventos:", error);
+    }
   };
 
-  const eventosFiltrados = eventosMock.filter(aplicarFiltros);
+  // Função para carregar as categorias
+  const carregarCategorias = async () => {
+    try {
+      const data = await getCategorias(); // Obtendo as categorias
+      setCategorias(data);
+    } catch (error) {
+      console.error("❌ Erro ao carregar categorias:", error);
+    }
+  };
 
+  useEffect(() => {
+    const carregarDados = async () => {
+      setLoading(true);  // Inicializa o carregamento
+
+      // Carrega eventos e categorias de forma assíncrona
+      await Promise.all([carregarEventos(), carregarCategorias()]);
+
+      // Depois que ambos os dados forem carregados, setar o loading como false
+      setLoading(false);
+    };
+
+    carregarDados();
+  }, []);  // Executa uma vez, quando o componente for montado
+
+  // Função para navegar para os detalhes do evento
   const handleEventoPress = (evento) => {
     navigation.navigate('DetalhesEvento', { evento });
   };
 
+  // Função para aplicar o filtro de busca
+  const aplicarFiltroBusca = (evento) => {
+    const texto = filtroTexto.toLowerCase();
+    const titulo = evento.titulo || evento.nome || '';  // Verifica se 'titulo' ou 'nome' existe
+    const passaTexto = titulo.toLowerCase().includes(texto);
+    const passaCategoria = filtroCategoria ? evento.categoria === filtroCategoria : true; // Filtro de categoria
+    return passaTexto && passaCategoria;
+  };
+
+  // Filtrando os eventos com base no texto da busca e na categoria
+  const eventosFiltrados = eventos.filter(aplicarFiltroBusca);
+
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.header}>Buscar Eventos</Text>
+      <ScrollView style={styles.container}>
+        <Text style={styles.header}>Buscar Eventos</Text>
 
-      <View style={styles.searchBar}>
-        <TextInput
-          style={styles.input}
-          placeholder="Digite para buscar"
-          placeholderTextColor="#999"
-          onChangeText={setFiltroTexto}
-          value={filtroTexto}
-        />
-        <Ionicons name="person-circle-outline" size={32} color="#003366" />
-      </View>
+        {/* Box de busca */}
+        <View style={styles.searchBox}>
+          <TextInput
+              style={styles.input}
+              placeholder="Digite para buscar"
+              placeholderTextColor="#999"
+              onChangeText={setFiltroTexto}
+              value={filtroTexto}
+          />
+        </View>
 
-      <View style={styles.filterRow}>
-        {['Gratuito', 'Pago', 'Hoje'].map((filtro) => (
-          <TouchableOpacity
-            key={filtro}
-            style={[
-              styles.filterButton,
-              filtroCategoria === filtro && styles.filterButtonActive,
-            ]}
-            onPress={() =>
-              setFiltroCategoria(filtroCategoria === filtro ? null : filtro)
-            }
-          >
-            <Text style={styles.filterButtonText}>{filtro}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+        {/* Filtro de categorias */}
+        <View style={styles.filterRow}>
+          {categorias.map((categoria) => (
+              <TouchableOpacity
+                  key={categoria.id}
+                  style={[
+                    styles.filterButton,
+                    filtroCategoria === categoria.nome && styles.filterButtonActive, // Aplique estilo quando a categoria estiver ativa
+                  ]}
+                  onPress={() =>
+                      setFiltroCategoria(filtroCategoria === categoria.nome ? null : categoria.nome) // Alternar categoria
+                  }
+              >
+                <Text style={styles.filterButtonText}>{categoria.nome}</Text>
+              </TouchableOpacity>
+          ))}
+        </View>
 
-      <Text style={styles.sectionTitle}>Eventos sugeridos</Text>
-      {eventosFiltrados.map((evento, idx) => (
-        <TouchableOpacity
-          key={idx}
-          style={styles.card}
-          onPress={() => handleEventoPress(evento)}
-        >
-          <Image source={evento.imagem} style={styles.cardImage} />
-          <View style={styles.cardContent}>
-            <Text style={styles.cardTitle}>{evento.titulo}</Text>
-            <Text style={styles.cardSubtitle}>{evento.subtitulo}</Text>
-            <Text style={styles.cardInfo}>📅 {evento.data}</Text>
-            <Text style={styles.cardInfo}>📍 {evento.local}</Text>
-          </View>
-        </TouchableOpacity>
-      ))}
-    </ScrollView>
+        {loading ? (
+            <ActivityIndicator size="large" color="#fff" style={{ marginTop: 20 }} />
+        ) : (
+            <>
+              <Text style={styles.sectionTitle}>Eventos sugeridos</Text>
+              {eventosFiltrados.length > 0 ? (
+                  eventosFiltrados.map((evento, idx) => (
+                      <TouchableOpacity
+                          key={idx}
+                          style={styles.card}
+                          onPress={() => handleEventoPress(evento)}
+                      >
+                        <Image
+                            source={evento.imagem ? { uri: evento.imagem } : require('../../assets/images/default.jpg')}
+                            style={styles.cardImage}
+                        />
+                        <View style={styles.cardContent}>
+                          <Text style={styles.cardTitle}>{evento.titulo || evento.nome || 'Evento sem nome'}</Text>
+                          <Text style={styles.cardSubtitle}>{evento.descricao || 'Sem descrição'}</Text>
+                          <Text style={styles.cardDate}>
+                            📅 {evento.data ? new Date(evento.data).toLocaleDateString() : 'Data indefinida'}
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                  ))
+              ) : (
+                  <Text style={styles.noResults}>Nenhum evento encontrado.</Text>
+              )}
+            </>
+        )}
+      </ScrollView>
   );
 }
 
@@ -121,25 +152,31 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: 'white',
     fontWeight: 'bold',
-    marginTop:40,
+    marginTop: 40,
     marginBottom: 12,
   },
-  searchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  // Box de busca
+  searchBox: {
     backgroundColor: '#fff',
     borderRadius: 8,
     marginBottom: 16,
     paddingHorizontal: 12,
+    paddingVertical: 8,
   },
   input: {
-    flex: 1,
     height: 48,
     color: '#000',
+    fontSize: 16,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: 'white',
+    marginBottom: 12,
   },
   filterRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexWrap: 'wrap',
     marginBottom: 20,
   },
   filterButton: {
@@ -147,6 +184,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 14,
     borderRadius: 20,
+    margin: 5,
   },
   filterButtonActive: {
     backgroundColor: '#ffd700',
@@ -154,12 +192,6 @@ const styles = StyleSheet.create({
   filterButtonText: {
     fontWeight: 'bold',
     color: '#003366',
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: 'white',
-    marginBottom: 12,
   },
   card: {
     flexDirection: 'row',
@@ -186,8 +218,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#555',
   },
-  cardInfo: {
+  cardDate: {
     fontSize: 12,
     color: '#777',
+  },
+  noResults: {
+    color: 'white',
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: 20,
   },
 });

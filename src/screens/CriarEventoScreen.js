@@ -1,132 +1,136 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
-  SafeAreaView,
-  Modal,
+  View, Text, TextInput, StyleSheet, TouchableOpacity,
+  ScrollView, SafeAreaView, Modal, Alert, ActivityIndicator // Adicionar a importação do ActivityIndicator
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { getCategorias } from '../services/categoriaApi'; // Função para buscar categorias da API
 
 export default function CriarEventoScreen() {
   const navigation = useNavigation();
-
-  const [titulo, setTitulo] = useState('');
+  const [nome, setNome] = useState('');
   const [descricao, setDescricao] = useState('');
-  const [data, setData] = useState('');
+  const [dataEvento, setDataEvento] = useState('');
   const [local, setLocal] = useState('');
-  const [categoriaSelecionada, setCategoriaSelecionada] = useState('');
+  const [urlEvento, setUrlEvento] = useState('');
+  const [organizador, setOrganizador] = useState('');
+  const [categoriaSelecionada, setCategoriaSelecionada] = useState(null);
+  const [categorias, setCategorias] = useState([]); // Estado para armazenar as categorias
   const [popupVisible, setPopupVisible] = useState(false);
+  const [loading, setLoading] = useState(true); // Estado de carregamento para as categorias
 
-  const categorias = ['Futebol', 'Basquete', 'Skate', 'Vôlei'];
+  const BASE_URL = 'http://192.168.0.6:8080';
 
-  const handleSalvarEvento = () => {
-    console.log({
-      titulo,
-      descricao,
-      data,
-      local,
-      categoria: categoriaSelecionada,
-    });
-
-    setPopupVisible(true);
-
-    setTimeout(() => {
-      setPopupVisible(false);
-      navigation.navigate('Inicio'); // redireciona para Home
-    }, 2000);
+  // Função para carregar as categorias da API
+  const carregarCategorias = async () => {
+    try {
+      const data = await getCategorias(); // Obtendo as categorias da API
+      setCategorias(data);
+      setLoading(false); // Após carregar as categorias, setar loading como false
+    } catch (error) {
+      console.error("❌ Erro ao carregar categorias:", error);
+      setLoading(false); // Mesmo em caso de erro, setar loading como false
+    }
   };
 
-  const toggleCategoria = (categoria) => {
-    setCategoriaSelecionada(prev =>
-      prev === categoria ? '' : categoria
-    );
+  useEffect(() => {
+    carregarCategorias(); // Carregar categorias ao montar o componente
+  }, []);
+
+  const handleSalvarEvento = async () => {
+    if (!nome || !descricao || !dataEvento || !local || !urlEvento || !organizador || !categoriaSelecionada) {
+      Alert.alert('Erro', 'Preencha todos os campos');
+      return;
+    }
+
+    const evento = {
+      nome,
+      descricao,
+      dataEvento,
+      local,
+      urlEvento,
+      organizador,
+      idCategoria: categoriaSelecionada,
+    };
+
+    try {
+      const response = await fetch(`${BASE_URL}/eventos`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(evento),
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao criar evento');
+      }
+
+      setPopupVisible(true);
+      setTimeout(() => {
+        setPopupVisible(false);
+        navigation.navigate('Inicio');
+      }, 2000);
+    } catch (error) {
+      Alert.alert('Erro', error.message);
+    }
+  };
+
+  const toggleCategoria = (id) => {
+    setCategoriaSelecionada(prev => (prev === id ? null : id)); // Alternar a seleção da categoria
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView>
-        <Text style={styles.header}>Criar Evento</Text>
-        <Text style={styles.subHeader}>Por favor, complete o formulário abaixo.</Text>
+      <SafeAreaView style={styles.container}>
+        <ScrollView>
+          <Text style={styles.header}>Criar Evento</Text>
+          <TextInput style={styles.input} placeholder="Nome do Evento" value={nome} onChangeText={setNome} />
+          <TextInput style={[styles.input, { height: 80 }]} placeholder="Descrição" multiline value={descricao} onChangeText={setDescricao} />
+          <TextInput style={styles.input} placeholder="Data e Hora (ex: 2025-01-21T09:00:00)" value={dataEvento} onChangeText={setDataEvento} />
+          <TextInput style={styles.input} placeholder="Local" value={local} onChangeText={setLocal} />
+          <TextInput style={styles.input} placeholder="URL do Evento" value={urlEvento} onChangeText={setUrlEvento} />
+          <TextInput style={styles.input} placeholder="Organizador" value={organizador} onChangeText={setOrganizador} />
 
-        <TextInput
-          style={styles.input}
-          placeholder="Evento..."
-          value={titulo}
-          onChangeText={setTitulo}
-        />
-        <TextInput
-          style={[styles.input, { height: 100 }]}
-          placeholder="Descrição..."
-          multiline
-          value={descricao}
-          onChangeText={setDescricao}
-        />
+          <Text style={styles.label}>Categoria</Text>
+          {loading ? (
+              <ActivityIndicator size="large" color="#fff" style={{ marginTop: 20 }} /> // Indicador de carregamento
+          ) : (
+              <View style={styles.tagsRow}>
+                {categorias.map((cat) => (
+                    <TouchableOpacity
+                        key={cat.id}
+                        style={[
+                          styles.tag,
+                          categoriaSelecionada === cat.id && styles.tagSelected,
+                        ]}
+                        onPress={() => toggleCategoria(cat.id)}
+                    >
+                      <Text
+                          style={[
+                            styles.tagText,
+                            categoriaSelecionada === cat.id && styles.tagTextSelected,
+                          ]}
+                      >
+                        {cat.nome}
+                      </Text>
+                    </TouchableOpacity>
+                ))}
+              </View>
+          )}
 
-        <Text style={styles.label}>Categoria</Text>
-        <View style={styles.tagsRow}>
-          {categorias.map((cat) => (
-            <TouchableOpacity
-              key={cat}
-              style={[
-                styles.tag,
-                categoriaSelecionada === cat && styles.tagSelected,
-              ]}
-              onPress={() => toggleCategoria(cat)}
-            >
-              <Text
-                style={[
-                  styles.tagText,
-                  categoriaSelecionada === cat && styles.tagTextSelected,
-                ]}
-              >
-                {cat}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        <TextInput
-          style={styles.input}
-          placeholder="Selecione a Data"
-          value={data}
-          onChangeText={setData}
-        />
-
-        <TextInput
-          style={styles.input}
-          placeholder="Onde será realizado o evento"
-          value={local}
-          onChangeText={setLocal}
-        />
-
-        <View style={styles.uploadRow}>
-          <View style={styles.uploadIconBox}>
-            <MaterialIcons name="image" size={36} color="#ccc" />
-          </View>
-          <TouchableOpacity style={styles.uploadBtn}>
-            <Text style={styles.uploadBtnText}>Upload de Imagem</Text>
+          <TouchableOpacity style={styles.saveBtn} onPress={handleSalvarEvento}>
+            <Text style={styles.saveBtnText}>Salvar Evento</Text>
           </TouchableOpacity>
-        </View>
 
-        <TouchableOpacity style={styles.saveBtn} onPress={handleSalvarEvento}>
-          <Text style={styles.saveBtnText}>Salvar Evento</Text>
-        </TouchableOpacity>
-
-        <Modal visible={popupVisible} transparent animationType="fade">
-          <View style={styles.popupContainer}>
-            <View style={styles.popupBox}>
-              <Text style={styles.popupIcon}>✅</Text>
-              <Text style={styles.popupText}>Evento criado com sucesso!</Text>
+          <Modal visible={popupVisible} transparent animationType="fade">
+            <View style={styles.popupContainer}>
+              <View style={styles.popupBox}>
+                <Text style={styles.popupIcon}>✅</Text>
+                <Text style={styles.popupText}>Evento criado com sucesso!</Text>
+              </View>
             </View>
-          </View>
-        </Modal>
-      </ScrollView>
-    </SafeAreaView>
+          </Modal>
+        </ScrollView>
+      </SafeAreaView>
   );
 }
 
@@ -141,11 +145,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#fff',
     marginTop: 30,
-    marginLeft: 15,
-  },
-  subHeader: {
-    color: '#ccc',
-    marginBottom: 24,
     marginLeft: 15,
   },
   input: {
@@ -164,7 +163,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     marginBottom: 16,
-    
   },
   tag: {
     borderWidth: 1,
@@ -174,7 +172,6 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     marginRight: 8,
     marginBottom: 8,
-    
   },
   tagSelected: {
     backgroundColor: '#06b6d4',
@@ -184,32 +181,6 @@ const styles = StyleSheet.create({
   },
   tagTextSelected: {
     color: '#fff',
-    fontWeight: '600',
-  },
-  uploadRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  uploadIconBox: {
-    width: 60,
-    height: 60,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-    backgroundColor: '#fff',
-  },
-  uploadBtn: {
-    backgroundColor: '#e0f2fe',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-  },
-  uploadBtnText: {
-    color: '#007aff',
     fontWeight: '600',
   },
   saveBtn: {
