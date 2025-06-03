@@ -2,40 +2,42 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 
 export default function EventosMarcadosScreen() {
-  const eventosHoje = [
-    { nome: 'ScreenStudio App', data: '4 de maio de 2023', status: 'Marcar' },
-    { nome: 'Slack Ltd', data: '4 de maio de 2023', status: 'Marcar' },
+  // Listagem dos esportes com seus respectivos status e datas
+  const esportesHoje = [
+    { nome: 'Futebol', data: '4 de maio de 2023', status: 'Marcar' },
+    { nome: 'Basquete', data: '4 de maio de 2023', status: 'Marcar' },
   ];
 
-  const eventosPassados = [
-    { nome: 'Dribbble LTD.', data: '4 de maio de 2023', status: 'Em andamento' },
-    { nome: 'FlutterFlow', data: '4 de maio de 2023', status: 'Em andamento' },
-    { nome: 'ScreenStudio App', data: '4 de maio de 2023', status: 'Finalizado' },
-    { nome: 'Slack Ltd', data: '4 de maio de 2023', status: 'Finalizado' },
+  const esportesPassados = [
+    { nome: 'Vôlei', data: '4 de maio de 2023', status: 'Em andamento' },
+    { nome: 'Tênis', data: '4 de maio de 2023', status: 'Em andamento' },
+    { nome: 'Futebol', data: '4 de maio de 2023', status: 'Finalizado' },
+    { nome: 'Basquete', data: '4 de maio de 2023', status: 'Finalizado' },
   ];
 
-  const renderCard = (evento) => (
-    <View key={evento.nome} style={styles.card}>
-      <View>
-        <Text style={styles.eventTitle}>{evento.nome}</Text>
-        <Text style={styles.eventDate}>Evento Marcado em {evento.data}</Text>
+  // Função para renderizar cada card de esporte
+  const renderCard = (esporte) => (
+      <View key={esporte.nome} style={styles.card}>
+        <View>
+          <Text style={styles.eventTitle}>{esporte.nome}</Text>
+          <Text style={styles.eventDate}>Esporte marcado para {esporte.data}</Text>
+        </View>
+        <TouchableOpacity style={[styles.statusButton, styles[esporte.status.replace(" ", "").toLowerCase()]]}>
+          <Text style={styles.statusText}>{esporte.status}</Text>
+        </TouchableOpacity>
       </View>
-      <TouchableOpacity style={[styles.statusButton, styles[evento.status.replace(" ", "").toLowerCase()]]}>
-        <Text style={styles.statusText}>{evento.status}</Text>
-      </TouchableOpacity>
-    </View>
   );
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.header}>Eventos Marcados</Text>
+      <ScrollView style={styles.container}>
+        <Text style={styles.header}>Esportes Marcados</Text>
 
-      <Text style={styles.sectionTitle}>Hoje</Text>
-      {eventosHoje.map(renderCard)}
+        <Text style={styles.sectionTitle}>Hoje</Text>
+        {esportesHoje.map(renderCard)}
 
-      <Text style={styles.sectionTitle}>Eventos passados</Text>
-      {eventosPassados.map(renderCard)}
-    </ScrollView>
+        <Text style={styles.sectionTitle}>Esportes passados</Text>
+        {esportesPassados.map(renderCard)}
+      </ScrollView>
   );
 }
 
@@ -49,13 +51,8 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: 'white',
-    marginTop:50,
+    marginTop: 50,
     marginBottom: 6,
-  },
-  subheader: {
-    fontSize: 14,
-    color: '#ccc',
-    marginBottom: 20,
   },
   sectionTitle: {
     fontSize: 18,

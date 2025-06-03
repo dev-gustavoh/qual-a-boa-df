@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { login } from '../services/auth'; // ajuste se necessário
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Importe o AsyncStorage
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
@@ -21,6 +22,11 @@ export default function LoginScreen({ navigation }) {
     try {
       const resultado = await login(email, senha);
       console.log('Usuário logado:', resultado);
+
+      // Armazenando os dados no AsyncStorage
+      await AsyncStorage.setItem('userData', JSON.stringify(resultado)); // Armazena os dados
+
+      // Navega para a tela principal após o login bem-sucedido
       navigation.navigate('Main');
     } catch (error) {
       setErro(error.message || 'Erro ao tentar logar');
