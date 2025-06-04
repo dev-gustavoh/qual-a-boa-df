@@ -32,7 +32,7 @@ export default function WelcomeScreen({ navigation }) {
           style={styles.button}
           onPress={() => navigation.navigate('Login')}
         >
-          <Text style={styles.buttonText}>📧 Logar com o e-mail</Text>
+          <Text style={styles.buttonText}> Logar com o e-mail</Text>
         </TouchableOpacity>
 
         <Text style={styles.registerText}>
