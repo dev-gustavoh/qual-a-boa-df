@@ -27,9 +27,6 @@ O aplicativo **Qual a Boa DF** permite que usuários:
 
 ---
 
-
----
-
 ## 🚀 Como Rodar o Projeto
 
 ### Pré-requisitos
@@ -102,6 +99,6 @@ Sincronização offline
 Sinta-se à vontade para abrir issues, propor melhorias ou dar um ⭐ no repositório!
 
 ## 👨‍💻 Autores
-Nicollas, Ian e Gustavo — Desenvolvimento Frontend
+Nicollas, Ian e Gustavo — Desenvolvimento Frontend 
 
 Projeto orientado pela professora Karla Sardin.
